@@ -4,22 +4,22 @@
 #ifndef EXIT_SUCCESS
 #include <stdlib.h>
 #endif
-#include <string.h>
-#include <errno.h>
-#include <utime.h>
-#include <dirent.h>
-#include <time.h>
+#include <string.h> // strcmp(), strcpy(), memset(), NULL
+#include <errno.h> //errno
+#include <utime.h> // utime(), struct utimbuf
+#include <dirent.h> // opendir, closedir, readdir
+#include <time.h> // ctime
 
 #ifdef __unix__
-#include <sys/stat.h>
-#include <sys/types.h>
-#include <unistd.h>
-#define defMod 0711
+#include <sys/stat.h> // struct stat, mkdir(), chmod(), S_IFBLK, S_IFDIR, S_IRUSR....
+#include <sys/types.h> // mode_t and other data types
+#include <unistd.h> // access(), chdir(), rmdir()
+#define defMod 0711 // Permission for linux
 #define OS 0
 #elif __WIN32__ || _MS_DOS_
-#include <dir.h>
+#include <dir.h> // mkdir(), chdir(), rmdir() ..
 #include <sys\stat.h>
-#include <io.h>
+#include <io.h>	// remove(), rename();
 #define OS 1
 #else
 #include <direct.h>
@@ -29,23 +29,27 @@
 enum State {SUCCESS = 0, FAIL = -1};
 
 int argCheck(int, char**, int*);
-void printErr(char *);
-void syntaxErr(char *);
+/* Checks the given command and help main() to redirect the function.
+	Takes 3 arguments :number of cmd strings, cmd strings and index to be sent back.
+*/
+void printErr(char *); // Prints error set up in string err and errno. Takes err string.
+void syntaxErr(char *); // Prints the specific syntax error or gives out help text. Takes hint for printing error.
 
-int c(char *, char* );
-int rm(char *, char* );
-int inf(char *, char* );
-int del(char *, char* );
-int cp(char*,char*,char*);
-int mv(char*,char*,char*);
-int rn(char*,char*,char*);
-int l(char*, char*);
-int ch(char*, char*);
-int edit(char*, char*);
+int c(char *, char* ); // Creates directory. Takes 2 argument : Directory name and error string pointer.
+int rm(char *, char* );	// Removes directory. Takes 2 argument : Directory name and error string pointer.
+int inf(char *, char* ); // Gives information about data. Takes 2 argument : dataname and error string pointer.
+int del(char *, char* ); // Deletes data. Takes 2 argument : Dataname and error string pointer.
+int cp(char*,char*,char*); // Copies file. Takes 3 argument : Filename, Destination and error string pointer.
+int mv(char*,char*,char*); // Moves file. Takes 3 argument : Filename, Destination and error string pointer.
+int rn(char*,char*,char*); // Renames data. Takes 3 argument : Dataname, New_name and error string pointer.
+int l(char*, char*); // Lists the content of a directory. Takes 2 argument : Directoryname and error string pointer.
+int ch(char*, char*); // Changes the process to given directory. Takes 2 argument : Directoryname and error string pointer.
+int edit(char*, char*); // Edits a file if present otherwise creates the file. Takes 2 argument : Filename and error string pointer.
 
-int oneCaller(int, char **, int);
-int twoCaller(int, char **, int);
-int multiCaller(int, char **, int);
+int oneCaller(int, char **, int); // Calls functions with 1 argument except err string only one time: Eg. l, ch, edit.
+int twoCaller(int, char **, int); // Calls functions with 2 arguments except err string only one time: Eg. cp, mv, rn
+int multiCaller(int, char **, int); //Calls functions with 1 arguments except err sting multiple times: Eg. c, rm, inf, del
+// These caller functions expect 3 argument : Number of cmd strings, cmd strings and index to recognize the function in array.
 
 
 int main(int argc, char* argv[]) {
@@ -101,7 +105,7 @@ void syntaxErr(char *hint) {
 			"\t  Flags : Command\n"\
 			"\t -l	: List the files and folder one given directory\n"\
 			"\t -ch 	: Change the working directory\n"\
-			"\t -edit	: Create or edit a data\n"\
+			"\t -edit	: Edits a file if present otherwise creates the file.\n"\
 			"\t -cp	: Copy a data from source to destination\n"\
 			"\t -mv	: Move a data from source to destination\n"\
 			"\t -rn	: Rename a data\n"\
@@ -210,7 +214,7 @@ int multiCaller(int count, char **names, int ind) {
 	return SUCCESS;
 }
 
-//Create a directory
+// Creates a directory
 int c(char* name, char* err) {
 	sprintf(err, "Error: Can't create directory named \"%s\"", name);
 	#if OS == 1 || OS == 2
@@ -220,11 +224,13 @@ int c(char* name, char* err) {
 	#endif
 }
 
+// Removes a directory
 int rm(char* name, char* err) {
 	sprintf(err, "Error: Can't remove directory named \"%s\"", name);
 		return rmdir(name);
 }
 
+// Gives information about a data.
 int inf(char* name, char* err) {
 	printf("\n");
 	int i = 0, id = -1;
@@ -296,6 +302,7 @@ int inf(char* name, char* err) {
 	return SUCCESS;
 }
 
+// Deletes a data
 int del(char* name, char* err) {
 	sprintf(err, "Error: Can't delete file/directory named \"%s\"", name);
 	if(remove(name) != SUCCESS){
@@ -304,6 +311,7 @@ int del(char* name, char* err) {
 	return SUCCESS;
 }
 
+// Copies a file
 int cp(char *sourcedata, char* destination,  char* err) {
 	struct stat source;
 	struct stat dest;
@@ -358,6 +366,7 @@ int cp(char *sourcedata, char* destination,  char* err) {
 	return SUCCESS;
 }
 
+// Moves a file
 int mv(char* sourcedata, char* destination, char *err) {
 	char puff[BUFSIZ];
 	if(getcwd(puff, sizeof puff) == NULL) {
@@ -377,11 +386,13 @@ int mv(char* sourcedata, char* destination, char *err) {
 	return SUCCESS;
 }
 
+// Renames a data
 int rn(char *oldname, char* newname, char *err) {
 	printf("\nWorking on the programming. Sorry for inconvenience\n\n");
 	return SUCCESS;
 }
 
+// Shows content of a directory.
 int l(char* dirpath, char* err) {
 	if(dirpath == NULL) {
 		return l(".", err);
@@ -398,6 +409,7 @@ int l(char* dirpath, char* err) {
 	return SUCCESS;
 }
 
+// Changes the program to given directory.
 int ch(char* dir, char* err) {
 	if(chdir(dir) != 0) {
 		sprintf(err, "Error: Error changing to the directory \"%s\"", dir);
@@ -407,6 +419,7 @@ int ch(char* dir, char* err) {
 	return SUCCESS;
 }
 
+// Edits a file if present otherwise creates the file.
 int edit(char* filename, char* err) {
 	printf("\nWorking on the programming. Sorry for inconvenience\n\n");
 	return SUCCESS;
