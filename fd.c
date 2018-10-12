@@ -110,7 +110,7 @@ void syntaxErr(char *hint) {
 			"\t -mv	: Move a data from source to destination\n"\
 			"\t -rn	: Rename a data\n"\
 			"\t -c 	: Create directory\n"\
-			"\t -r 	: Remove directory\n"\
+			"\t -rm 	: Remove directory\n"\
 			"\t -inf 	: Show the property of data\n"\
 			"\t -del 	: Delete given data\n\n");
 	}
