@@ -388,7 +388,10 @@ int mv(char* sourcedata, char* destination, char *err) {
 
 // Renames a data
 int rn(char *oldname, char* newname, char *err) {
-	printf("\nWorking on the programming. Sorry for inconvenience\n\n");
+	if(rename(oldname,newname) != 0) {
+		sprintf(err, "Error: Error renaming the data \"%s\"", oldname);
+		return FAIL;
+	}
 	return SUCCESS;
 }
 
